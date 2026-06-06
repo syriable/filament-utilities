@@ -1,32 +1,30 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "syriable/filament-utilities",
+    "description": "This is my package filament-utilities",
     "keywords": [
-        ":vendor_name",
+        "syriable",
         "laravel",
         "filamentphp",
         "filament",
         "filament-plugin",
-        ":package_slug"
+        "filament-utilities"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/syriable/filament-utilities",
     "support": {
-        "issues": "https://github.com/:vendor_slug/:package_slug/issues",
-        "source": "https://github.com/:vendor_slug/:package_slug"
+        "issues": "https://github.com/syriable/filament-utilities/issues",
+        "source": "https://github.com/syriable/filament-utilities"
     },
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "syriable",
+            "email": "info@syriable.com",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^8.2",
         "filament/filament": "^5.0",
-        "filament/forms": "^5.0",
-        "filament/tables": "^5.0",
         "spatie/laravel-package-tools": "^1.15.0"
     },
     "require-dev": {
@@ -43,13 +41,13 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "Syriable\Filament\Plugins\\Utilities\\": "src/",
+            "Syriable\Filament\Plugins\\Utilities\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/"
+            "Syriable\Filament\Plugins\\Utilities\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -64,10 +62,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Syriable\Filament\Plugins\\Utilities\\UtilitiesServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "Utilities": "Syriable\Filament\Plugins\\Utilities\\Facades\\Utilities"
             }
         }
     },
