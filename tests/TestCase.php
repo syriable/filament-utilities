@@ -19,6 +19,7 @@ use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
+use Syriable\Filament\Plugins\Translator\TranslatorServiceProvider;
 use Syriable\Filament\Plugins\Utilities\UtilitiesServiceProvider;
 
 class TestCase extends Orchestra
@@ -35,28 +36,33 @@ class TestCase extends Orchestra
         );
     }
 
-    protected function getPackageProviders($app)
+    /**
+     * Testbench disables Laravel's package auto-discovery, so Filament and its dependencies
+     * must be registered manually. Some dependency providers (e.g. blade-capture-directive)
+     * are only pulled in by newer Filament releases, so filter to the ones actually installed
+     * to keep the `prefer-lowest` matrix green.
+     *
+     * @return array<int, class-string>
+     */
+    protected function getPackageProviders($app): array
     {
-        $providers = [
-            ActionsServiceProvider::class,
-            BladeCaptureDirectiveServiceProvider::class,
-            BladeHeroiconsServiceProvider::class,
+        return array_values(array_filter([
+            LivewireServiceProvider::class,
             BladeIconsServiceProvider::class,
-            FilamentServiceProvider::class,
+            BladeHeroiconsServiceProvider::class,
+            BladeCaptureDirectiveServiceProvider::class,
+            SupportServiceProvider::class,
+            ActionsServiceProvider::class,
             FormsServiceProvider::class,
             InfolistsServiceProvider::class,
-            LivewireServiceProvider::class,
             NotificationsServiceProvider::class,
             SchemasServiceProvider::class,
-            SupportServiceProvider::class,
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
+            FilamentServiceProvider::class,
+            TranslatorServiceProvider::class,
             UtilitiesServiceProvider::class,
-        ];
-
-        sort($providers);
-
-        return $providers;
+        ], static fn (string $provider): bool => class_exists($provider)));
     }
 
     public function getEnvironmentSetUp($app): void
