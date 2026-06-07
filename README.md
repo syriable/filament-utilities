@@ -1,68 +1,116 @@
-# This is my package filament-utilities
+# Syriable Filament Utilities
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/syriable/filament-utilities.svg?style=flat-square)](https://packagist.org/packages/syriable/filament-utilities)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/syriable/filament-utilities/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/syriable/filament-utilities/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/syriable/filament-utilities/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/syriable/filament-utilities/actions?query=workflow%3A"Fix+PHP+code+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/syriable/filament-utilities.svg?style=flat-square)](https://packagist.org/packages/syriable/filament-utilities)
+[![GitHub Tests Action Status](https://github.com/syriable/filament-utilities/actions/workflows/tests.yml/badge.svg?branch=5.x)](https://github.com/syriable/filament-utilities/actions?query=workflow%3Atests+branch%3A5.x)
+[![GitHub Code Style Action Status](https://github.com/syriable/filament-utilities/actions/workflows/fix-code-style.yml/badge.svg?branch=5.x)](https://github.com/syriable/filament-utilities/actions?query=workflow%3Afix-code-style+branch%3A5.x)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 
+Developer tooling for the Syriable Filament ecosystem. The package wires custom Artisan generators that scaffold **translatable** Filament resources and module plugins, built on top of [`syriable/filament-translator`](https://github.com/syriable/filament-translator).
 
+## Features
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+- **`syriable:make-resource`** — drop-in replacement for Filament's resource generator that extends `TranslatableResource` and translatable resource pages instead of Filament's base classes.
+- **Module-aware model discovery** — interactive model selection searches Eloquent models under your `modules/` directory.
+- **`plugin:resource`** — scaffolds a Filament panel plugin for an [InterNACHI/modular](https://github.com/InterNACHI/modular) module and registers it in the module service provider.
+- **Custom file generators** — binds Syriable generators into Filament's `make:filament-resource` pipeline so generated code is translation-ready out of the box.
+
+## Requirements
+
+- PHP 8.3+
+- Laravel 11, 12, or 13
+- Filament 5.3.5+
+- [`syriable/filament-translator`](https://github.com/syriable/filament-translator) ^1.1
+
+For `plugin:resource`, your application must use [InterNACHI/modular](https://github.com/InterNACHI/modular) with modules under the path configured in `config/app-modules.php`.
 
 ## Installation
 
-You can install the package via composer:
+Install the package via Composer:
 
 ```bash
 composer require syriable/filament-utilities
 ```
 
-> [!IMPORTANT]
-> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme) first.
-
-After setting up a custom theme add the plugin's views to your theme css file or your app's css file if using the standalone packages.
-
-```css
-@source '../../../../vendor/syriable/filament-utilities/resources/**/*.blade.php';
-```
-
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --tag="filament-utilities-migrations"
-php artisan migrate
-```
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="filament-utilities-config"
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="filament-utilities-views"
-```
-
-This is the contents of the published config file:
+Register [`TranslatorPlugin`](https://github.com/syriable/filament-translator) on every Filament panel that should resolve convention-based labels:
 
 ```php
-return [
-];
+use Filament\Panel;
+use Syriable\Filament\Plugins\Translator\TranslatorPlugin;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->plugins([
+            TranslatorPlugin::make(),
+        ]);
+}
 ```
+
+`UtilitiesServiceProvider` is auto-discovered. No panel plugin registration is required for the generators to work.
 
 ## Usage
 
-```php
-$utilities = new Syriable\Filament\Plugins\Utilities();
-echo $utilities->echoPhrase('Hello, Syriable\Filament\Plugins!');
+### Generate a translatable resource
+
+Use `syriable:make-resource` (alias: `syriable:resource`) instead of `make:filament-resource`. It accepts the same options as Filament's command — panel selection, soft deletes, separate form/table schema classes, and so on.
+
+```bash
+php artisan syriable:make-resource Buyer --panel=dashboard
 ```
+
+When no model argument is passed, the command interactively suggests Eloquent models discovered from classes loaded from your `modules/` directory.
+
+Generated classes extend Syriable's translatable bases:
+
+| Generated class | Extends |
+| --- | --- |
+| Resource | `TranslatableResource` |
+| Create page | `TranslatableCreateRecord` |
+| Edit page | `TranslatableEditRecord` |
+| List page | `TranslatableListRecords` |
+
+Model namespaces are resolved relative to the selected resource namespace so module resources reference module models instead of `App\Models`.
+
+After generation, add translation keys under `lang/{locale}/` following the [filament-translator convention](https://github.com/syriable/filament-translator#translation-key-convention). Enable `createMissingTranslationKeys()` during local development to scaffold missing keys automatically.
+
+### Generate a module Filament plugin
+
+Scaffold a Filament plugin class inside a modular application:
+
+```bash
+php artisan plugin:resource users
+```
+
+When the module name is omitted, the command interactively lists directories under `modules/`.
+
+The command:
+
+1. Creates `{Module}Plugin.php` in `modules/{module}/src/` using the published stub.
+2. Registers the plugin on the module's service provider via `Panel::configureUsing()`.
+
+The generated plugin discovers resources, pages, and widgets under the module's `Filament/` directories.
+
+### Publish generator stubs
+
+Customize the plugin stub before running `plugin:resource`:
+
+```bash
+php artisan vendor:publish --tag=filament-utilities-stubs
+```
+
+Stubs are copied to `stubs/filament-utilities/` in your application root.
 
 ## Testing
 
 ```bash
 composer test
+```
+
+Other useful scripts:
+
+```bash
+composer analyse   # PHPStan
+composer lint      # Laravel Pint
 ```
 
 ## Changelog
@@ -79,8 +127,7 @@ Please review [our security policy](.github/SECURITY.md) on how to report securi
 
 ## Credits
 
-- [syriable](https://github.com/syriable)
-- [All Contributors](../../contributors)
+- [Syriable](https://github.com/syriable)
 
 ## License
 

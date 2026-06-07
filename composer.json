@@ -1,6 +1,6 @@
 {
     "name": "syriable/filament-utilities",
-    "description": "This is my package filament-utilities",
+    "description": "Developer tooling for the Syriable Filament ecosystem — translatable resource generators and modular plugin scaffolding.",
     "keywords": [
         "syriable",
         "laravel",

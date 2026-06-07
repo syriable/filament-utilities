@@ -10,7 +10,7 @@ class UtilitiesCommand extends Command
 {
     public $signature = 'filament-utilities';
 
-    public $description = 'My command';
+    public $description = 'Display a confirmation that filament-utilities is installed';
 
     public function handle(): int
     {
