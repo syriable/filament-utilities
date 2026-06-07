@@ -43,7 +43,10 @@
         "psr-4": {
             "Syriable\\Filament\\Plugins\\Utilities\\": "src/",
             "Syriable\\Filament\\Plugins\\Utilities\\Database\\Factories\\": "database/factories/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

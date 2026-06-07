@@ -19,6 +19,7 @@ class ResourceCreateRecordPageClassGenerator extends BaseResourceCreateRecordPag
         $namespace->addUse(TranslatableCreateRecord::class);
     }
 
+    #[\Override]
     public function getExtends(): string
     {
         return TranslatableCreateRecord::class;

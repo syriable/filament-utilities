@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Syriable\Filament\Plugins\Utilities\Commands;
 
 use Filament\Commands\MakeResourceCommand as BaseMakeResourceCommand;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Support\Stringable;
@@ -12,7 +15,6 @@ use function Laravel\Prompts\search;
 use function Laravel\Prompts\suggest;
 
 #[AsCommand(name: 'syriable:make-resource', aliases: [
-    'syriable:make-resource',
     'syriable:resource',
 ])]
 class MakeResourceCommand extends BaseMakeResourceCommand
@@ -25,10 +27,10 @@ class MakeResourceCommand extends BaseMakeResourceCommand
      * @var array<string>
      */
     protected $aliases = [
-        'syriable:make-resource',
         'syriable:resource',
     ];
 
+    #[\Override]
     protected function configureModel(): void
     {
         $modelArgument = $this->argument('model');
@@ -39,8 +41,8 @@ class MakeResourceCommand extends BaseMakeResourceCommand
                 ->trim('\\')
                 ->trim(' ')
                 ->when(
-                    fn (Stringable $model): bool => str($model)->endsWith('Resource'),
-                    fn (Stringable $model): Stringable => str($model)->beforeLast('Resource'),
+                    fn (Stringable $model): bool => $model->endsWith('Resource'),
+                    fn (Stringable $model): Stringable => $model->beforeLast('Resource'),
                 )
                 ->studly()
                 ->replace('/', '\\')
@@ -65,7 +67,7 @@ class MakeResourceCommand extends BaseMakeResourceCommand
             $modelFqn = suggest(
                 label: 'What is the model?',
                 options: function (string $search) use ($modelFqns): array {
-                    $search = str($search)->trim()->replace(['\\', '/'], '');
+                    $search = str($search)->trim()->replace(['\\', '/'], '')->toString();
 
                     if (blank($search)) {
                         return $modelFqns;
@@ -112,9 +114,10 @@ class MakeResourceCommand extends BaseMakeResourceCommand
     /**
      * @return array{string, string}
      */
+    #[\Override]
     public function getResourcesLocation(string $question): array
     {
-        if ($this->panel === null) {
+        if (! $this->panel instanceof Panel) {
             return parent::getResourcesLocation($question);
         }
 
@@ -153,7 +156,7 @@ class MakeResourceCommand extends BaseMakeResourceCommand
                     return $keyedNamespaces;
                 }
 
-                $search = str($search)->trim()->replace(['\\', '/'], '');
+                $search = str($search)->trim()->replace(['\\', '/'], '')->toString();
 
                 return array_filter($keyedNamespaces, fn (string $namespace): bool => str($namespace)->replace(['\\', '/'], '')->contains($search, ignoreCase: true));
             },
@@ -165,6 +168,7 @@ class MakeResourceCommand extends BaseMakeResourceCommand
         ];
     }
 
+    #[\Override]
     protected function configureLocation(): void
     {
         if ($this->hasResourceClassesOutsideDirectories) {
@@ -197,6 +201,10 @@ class MakeResourceCommand extends BaseMakeResourceCommand
      */
     protected function discoverModelClasses(?string $parentClass = null, string $packageName = 'modules'): array
     {
+        if (blank($packageName) || blank($parentClass)) {
+            return [];
+        }
+
         $classLoader = require base_path('vendor/autoload.php');
 
         /** @var array<class-string<Model>, string> $classMap */
@@ -205,10 +213,6 @@ class MakeResourceCommand extends BaseMakeResourceCommand
         $classes = [];
 
         foreach ($classMap as $class => $file) {
-            if (blank($packageName) || blank($parentClass)) {
-                continue;
-            }
-
             if (! (str($file)->contains(DIRECTORY_SEPARATOR . $packageName . DIRECTORY_SEPARATOR) ||
                 str($file)->contains('/' . $packageName . '/') ||
                 str($file)->contains('\\' . $packageName . '\\'))) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Syriable\Filament\Plugins\Utilities;
 
 use Filament\Commands\FileGenerators\Resources\Pages\ResourceCreateRecordPageClassGenerator;

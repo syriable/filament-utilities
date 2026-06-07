@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Eloquent\Model;
 
 use function Filament\Support\discover_app_classes;
@@ -21,6 +23,10 @@ if (! function_exists('discover_package_classes')) {
      */
     function discover_package_classes(?string $parentClass = null, string $packageName = 'modules'): array
     {
+        if (blank($packageName) || blank($parentClass)) {
+            return [];
+        }
+
         $classLoader = require base_path('vendor/autoload.php');
 
         /** @var array<class-string<Model>, string> $classMap */
@@ -29,10 +35,6 @@ if (! function_exists('discover_package_classes')) {
         $classes = [];
 
         foreach ($classMap as $class => $file) {
-            if (blank($packageName) || blank($parentClass)) {
-                continue;
-            }
-
             if (! (str($file)->contains(DIRECTORY_SEPARATOR . $packageName . DIRECTORY_SEPARATOR) ||
                 str($file)->contains('/' . $packageName . '/') ||
                 str($file)->contains('\\' . $packageName . '\\'))) {
