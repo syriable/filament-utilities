@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Syriable\Filament\Plugins\Utilities\Commands;
 
 use Filament\Support\Commands\Concerns\CanManipulateFiles;
@@ -31,6 +33,7 @@ class CreatePluginCommand extends Command
     /**
      * @return array<InputArgument>
      */
+    #[\Override]
     protected function getArguments(): array
     {
         return [
@@ -185,7 +188,7 @@ class CreatePluginCommand extends Command
         $selected = suggest(
             label: 'What is the plugin?',
             options: function (string $search) use ($pluginFqns): array {
-                $search = str($search)->trim()->replace(['\\', '/'], '');
+                $search = str($search)->trim()->replace(['\\', '/'], '')->toString();
 
                 if (blank($search)) {
                     return $pluginFqns;

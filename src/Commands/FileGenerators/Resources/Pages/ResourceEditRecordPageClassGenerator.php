@@ -19,6 +19,7 @@ class ResourceEditRecordPageClassGenerator extends BaseResourceEditRecordPageCla
         $namespace->addUse(TranslatableEditRecord::class);
     }
 
+    #[\Override]
     public function getExtends(): string
     {
         return TranslatableEditRecord::class;

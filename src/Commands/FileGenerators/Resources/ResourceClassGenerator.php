@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Syriable\Filament\Plugins\Utilities\Commands\FileGenerators\Resources;
 
 use Filament\Commands\FileGenerators\Resources\ResourceClassGenerator as BaseResourceClassGenerator;
@@ -10,6 +12,7 @@ use function Livewire\str;
 
 class ResourceClassGenerator extends BaseResourceClassGenerator
 {
+    #[\Override]
     public function getModelFqn(): string
     {
         $oldModel = parent::getModelFqn();
@@ -29,15 +32,15 @@ class ResourceClassGenerator extends BaseResourceClassGenerator
         $namespace->addUse($this->getModelFqn());
     }
 
+    #[\Override]
     public function getExtends(): string
     {
         return TranslatableResource::class;
     }
 
+    #[\Override]
     public function getImplements(): array
     {
-        return [
-
-        ];
+        return [];
     }
 }

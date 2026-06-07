@@ -11,6 +11,7 @@ use Syriable\Filament\Plugins\Translator\Filament\Resources\Resource\Pages\Trans
 
 class ResourceListRecordsPageClassGenerator extends BaseResourceListRecordsPageClassGenerator
 {
+    #[\Override]
     public function getExtends(): string
     {
         return TranslatableListRecords::class;
