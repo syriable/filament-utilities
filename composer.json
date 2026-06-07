@@ -37,22 +37,23 @@
         "pestphp/pest-plugin-laravel": "^3.0|^4.0",
         "pestphp/pest-plugin-livewire": "^3.0|^4.0",
         "rector/rector": "^2.0",
-        "spatie/laravel-ray": "^1.26"
+        "spatie/laravel-ray": "^1.26",
+        "syriable/filament-translator": "@dev"
     },
     "autoload": {
         "psr-4": {
-            "Syriable\Filament\Plugins\\Utilities\\": "src/",
-            "Syriable\Filament\Plugins\\Utilities\\Database\\Factories\\": "database/factories/"
+            "Syriable\\Filament\\Plugins\\Utilities\\": "src/",
+            "Syriable\\Filament\\Plugins\\Utilities\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Syriable\Filament\Plugins\\Utilities\\Tests\\": "tests/"
+            "Syriable\\Filament\\Plugins\\Utilities\\Tests\\": "tests/"
         }
     },
     "scripts": {
         "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
-        "analyse": "phpstan analyse",
+        "analyse": "phpstan analyse --memory-limit=512M",
         "lint": "pint",
         "refactor": "rector",
         "test": "pest",
@@ -62,10 +63,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Syriable\Filament\Plugins\\Utilities\\UtilitiesServiceProvider"
+                "Syriable\\Filament\\Plugins\\Utilities\\UtilitiesServiceProvider"
             ],
             "aliases": {
-                "Utilities": "Syriable\Filament\Plugins\\Utilities\\Facades\\Utilities"
+                "Utilities": "Syriable\\Filament\\Plugins\\Utilities\\Facades\\Utilities"
             }
         }
     },
@@ -78,5 +79,14 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../filament-translator",
+            "options": {
+                "symlink": true
+            }
+        }
+    ]
 }

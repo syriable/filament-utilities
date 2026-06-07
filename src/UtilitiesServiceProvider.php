@@ -2,6 +2,10 @@
 
 namespace Syriable\Filament\Plugins\Utilities;
 
+use Filament\Commands\FileGenerators\Resources\Pages\ResourceCreateRecordPageClassGenerator;
+use Filament\Commands\FileGenerators\Resources\Pages\ResourceEditRecordPageClassGenerator;
+use Filament\Commands\FileGenerators\Resources\Pages\ResourceListRecordsPageClassGenerator;
+use Filament\Commands\FileGenerators\Resources\ResourceClassGenerator;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
@@ -13,7 +17,6 @@ use Livewire\Features\SupportTesting\Testable;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Syriable\Filament\Plugins\Utilities\Commands\UtilitiesCommand;
 use Syriable\Filament\Plugins\Utilities\Testing\TestsUtilities;
 
 class UtilitiesServiceProvider extends PackageServiceProvider
@@ -31,7 +34,7 @@ class UtilitiesServiceProvider extends PackageServiceProvider
          */
         $package->name(static::$name)
             ->hasCommands($this->getCommands())
-            ->hasInstallCommand(function (InstallCommand $command) {
+            ->hasInstallCommand(function (InstallCommand $command): void {
                 $command
                     ->publishConfigFile()
                     ->publishMigrations()
@@ -58,7 +61,13 @@ class UtilitiesServiceProvider extends PackageServiceProvider
         }
     }
 
-    public function packageRegistered(): void {}
+    public function packageRegistered(): void
+    {
+        $this->app->bind(ResourceClassGenerator::class, Commands\FileGenerators\Resources\ResourceClassGenerator::class);
+        $this->app->bind(ResourceEditRecordPageClassGenerator::class, Commands\FileGenerators\Resources\Pages\ResourceEditRecordPageClassGenerator::class);
+        $this->app->bind(ResourceListRecordsPageClassGenerator::class, Commands\FileGenerators\Resources\Pages\ResourceListRecordsPageClassGenerator::class);
+        $this->app->bind(ResourceCreateRecordPageClassGenerator::class, Commands\FileGenerators\Resources\Pages\ResourceCreateRecordPageClassGenerator::class);
+    }
 
     public function packageBooted(): void
     {
@@ -89,7 +98,7 @@ class UtilitiesServiceProvider extends PackageServiceProvider
         Testable::mixin(new TestsUtilities);
     }
 
-    protected function getAssetPackageName(): ?string
+    protected function getAssetPackageName(): string
     {
         return 'syriable/filament-utilities';
     }
@@ -112,7 +121,9 @@ class UtilitiesServiceProvider extends PackageServiceProvider
     protected function getCommands(): array
     {
         return [
-            UtilitiesCommand::class,
+            Commands\UtilitiesCommand::class,
+            Commands\MakeResourceCommand::class,
+            Commands\CreatePluginCommand::class,
         ];
     }
 
