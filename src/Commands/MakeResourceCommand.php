@@ -31,8 +31,10 @@ class MakeResourceCommand extends BaseMakeResourceCommand
 
     protected function configureModel(): void
     {
-        if (filled($this->argument('model'))) {
-            $this->modelFqnEnd = (string) str((string) $this->argument('model'))
+        $modelArgument = $this->argument('model');
+
+        if (is_string($modelArgument) && filled($modelArgument)) {
+            $this->modelFqnEnd = str($modelArgument)
                 ->trim('/')
                 ->trim('\\')
                 ->trim(' ')
@@ -41,13 +43,17 @@ class MakeResourceCommand extends BaseMakeResourceCommand
                     fn (Stringable $model): Stringable => str($model)->beforeLast('Resource'),
                 )
                 ->studly()
-                ->replace('/', '\\');
+                ->replace('/', '\\')
+                ->toString();
 
             if (blank($this->modelFqnEnd)) {
                 $this->modelFqnEnd = 'Resource';
             }
 
-            $modelNamespace = (string) ($this->option('model-namespace') ?? app()->getNamespace() . 'Models');
+            $modelNamespaceOption = $this->option('model-namespace');
+            $modelNamespace = is_string($modelNamespaceOption) && filled($modelNamespaceOption)
+                ? $modelNamespaceOption
+                : app()->getNamespace() . 'Models';
 
             /** @var class-string<Model> $modelFqn */
             $modelFqn = "{$modelNamespace}\\{$this->modelFqnEnd}";
@@ -125,12 +131,12 @@ class MakeResourceCommand extends BaseMakeResourceCommand
             }
         }
 
-        if ($this->option('resource-namespace')) {
-            $resourceNamespace = (string) $this->option('resource-namespace');
+        $resourceNamespaceOption = $this->option('resource-namespace');
 
+        if (is_string($resourceNamespaceOption) && filled($resourceNamespaceOption)) {
             return [
-                $resourceNamespace,
-                $directories[array_search($resourceNamespace, $namespaces, true)],
+                $resourceNamespaceOption,
+                $directories[array_search($resourceNamespaceOption, $namespaces, true)],
             ];
         }
 

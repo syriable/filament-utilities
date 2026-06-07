@@ -160,41 +160,47 @@ class CreatePluginCommand extends Command
 
     protected function configurePlugin(): void
     {
-        if (filled($this->argument('plugin'))) {
-            $originalName = (string) str((string) $this->argument('plugin'))
+        $pluginArgument = $this->argument('plugin');
+
+        if (is_string($pluginArgument) && filled($pluginArgument)) {
+            $originalName = str($pluginArgument)
                 ->trim('/')
                 ->trim('\\')
-                ->trim(' ');
+                ->trim(' ')
+                ->toString();
 
             $this->moduleNameOriginal = $originalName;
-            $this->pluginFqn = (string) str($originalName)
+            $this->pluginFqn = str($originalName)
                 ->studly()
-                ->replace('/', '\\');
+                ->replace('/', '\\')
+                ->toString();
             $this->pluginNamespace = app()->getNamespace() . 'Plugins\\' . $this->pluginFqn;
-        } else {
-            $pluginFqns = collect(File::glob(base_path('modules/*')))
-                ->map(fn ($path) => str($path)->after(base_path('modules/'))->toString())->toArray();
 
-            $selected = suggest(
-                label: 'What is the plugin?',
-                options: function (string $search) use ($pluginFqns): array {
-                    $search = str($search)->trim()->replace(['\\', '/'], '');
-
-                    if (blank($search)) {
-                        return $pluginFqns;
-                    }
-
-                    return array_filter(
-                        $pluginFqns,
-                        fn (string $class): bool => str($class)->replace(['\\', '/'], '')->contains($search, ignoreCase: true),
-                    );
-                },
-                placeholder: 'users',
-                required: true,
-            );
-
-            $this->moduleNameOriginal = $selected;
-            $this->pluginFqn = (string) str($selected)->studly()->toString();
+            return;
         }
+
+        $pluginFqns = collect(File::glob(base_path('modules/*')))
+            ->map(fn ($path) => str($path)->after(base_path('modules/'))->toString())->toArray();
+
+        $selected = suggest(
+            label: 'What is the plugin?',
+            options: function (string $search) use ($pluginFqns): array {
+                $search = str($search)->trim()->replace(['\\', '/'], '');
+
+                if (blank($search)) {
+                    return $pluginFqns;
+                }
+
+                return array_filter(
+                    $pluginFqns,
+                    fn (string $class): bool => str($class)->replace(['\\', '/'], '')->contains($search, ignoreCase: true),
+                );
+            },
+            placeholder: 'users',
+            required: true,
+        );
+
+        $this->moduleNameOriginal = $selected;
+        $this->pluginFqn = str($selected)->studly()->toString();
     }
 }
