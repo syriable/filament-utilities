@@ -36,14 +36,26 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, pdo, pdo_sqlite
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        shell: bash
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
       - name: Cache Composer dependencies
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: ~/.composer/cache/files
-          key: composer-${{ matrix.php }}-${{ matrix.laravel }}-${{ hashFiles('composer.json') }}
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ matrix.php }}-${{ matrix.laravel }}-${{ hashFiles('composer.json') }}
           restore-keys: |
-            composer-${{ matrix.php }}-${{ matrix.laravel }}-
-            composer-${{ matrix.php }}-
+            composer-${{ runner.os }}-${{ matrix.php }}-${{ matrix.laravel }}-
+            composer-${{ runner.os }}-${{ matrix.php }}-
 
       - name: Cache PHPStan result
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -52,13 +64,6 @@ jobs:
           key: phpstan-${{ matrix.php }}-${{ matrix.laravel }}-${{ github.sha }}
           restore-keys: |
             phpstan-${{ matrix.php }}-${{ matrix.laravel }}-
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@7c071dfe9dc99bdf297fa79cb49ea005b9fcadbc # 2.37.1
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: mbstring, pdo, pdo_sqlite
-          coverage: none
 
       - name: Install dependencies
         run: |
