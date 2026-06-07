@@ -38,7 +38,7 @@
         "pestphp/pest-plugin-livewire": "^3.0|^4.0",
         "rector/rector": "^2.0",
         "spatie/laravel-ray": "^1.26",
-        "syriable/filament-translator": "@dev"
+        "syriable/filament-translator": "^1.1"
     },
     "autoload": {
         "psr-4": {
@@ -79,14 +79,5 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true,
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../filament-translator",
-            "options": {
-                "symlink": true
-            }
-        }
-    ]
+    "prefer-stable": true
 }
