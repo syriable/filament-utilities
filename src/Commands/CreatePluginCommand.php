@@ -146,7 +146,9 @@ class CreatePluginCommand extends Command
             return $content;
         }
 
-        preg_match_all('/^use .+;$/m', $content, $matches);
+        // Tolerate CRLF line endings: in multiline mode `$` sits before `\n`, so a
+        // trailing `\r` (e.g. on a Windows checkout) would otherwise break `;$`.
+        preg_match_all('/^use .+;\r?$/m', $content, $matches);
 
         if ($matches[0] !== []) {
             $lastUse = end($matches[0]);
@@ -155,7 +157,7 @@ class CreatePluginCommand extends Command
         }
 
         return (string) preg_replace(
-            '/^(namespace .+;)$/m',
+            '/^(namespace .+;)\r?$/m',
             "$1\n\n" . $useStatement,
             $content
         );
