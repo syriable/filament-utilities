@@ -16,10 +16,11 @@ Developer tooling for the Syriable Filament ecosystem. The package wires custom 
 
 ## Requirements
 
-- PHP 8.3+
+- PHP 8.4+
 - Laravel 11, 12, or 13
-- Filament 5.3.5+
+- Filament 5.5+
 - [`syriable/filament-translator`](https://github.com/syriable/filament-translator) ^1.1
+- [`syriable/filament-activitylog`](https://github.com/syriable/filament-activitylog) ^0.1
 
 For `plugin:resource`, your application must use [InterNACHI/modular](https://github.com/InterNACHI/modular) with modules under the path configured in `config/app-modules.php`.
 
@@ -102,7 +103,7 @@ Stubs are copied to `stubs/filament-utilities/` in your application root.
 
 ### Opinionated Filament defaults and macros
 
-The package ships two opt-in helpers. They are **not** applied automatically — call them from your own service provider's `boot()` method:
+The package ships several opt-in helpers. They are **not** applied automatically — call them from your own service provider's `boot()` method:
 
 ```php
 use Syriable\Filament\Plugins\Utilities\UtilitiesServiceProvider;
@@ -111,6 +112,8 @@ public function boot(): void
 {
     UtilitiesServiceProvider::initializeFilamentComponents();
     UtilitiesServiceProvider::microFilamentComponents();
+    UtilitiesServiceProvider::configureFactoryIcons();
+    UtilitiesServiceProvider::configureActivitylogTimeline();
 }
 ```
 
@@ -128,6 +131,10 @@ public function boot(): void
 - `ToggleButtons::fullWidth()`,
 - `Section::prime()` (a rounded, bordered container),
 - `Textarea::counter()` — renders a live character counter using this package's `filament-utilities::filament.components.textarea` field wrapper.
+
+`configureFactoryIcons()` registers your application's `resources/svg/icons` directory as a Blade Icons set (`fluxwork`, prefix `flux`).
+
+`configureActivitylogTimeline()` applies compact defaults and a per-event icon map to [`syriable/filament-activitylog`](https://github.com/syriable/filament-activitylog)'s `ActivitylogTimeline` component.
 
 > The `AdvancedTextColumn` integration requires the optional, paid
 > [`codewithdennis/filament-advanced-components`](https://filamentphp.com/plugins/codewithdennis-advanced-components)
