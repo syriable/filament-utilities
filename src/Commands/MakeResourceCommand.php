@@ -61,7 +61,7 @@ class MakeResourceCommand extends BaseMakeResourceCommand
             $modelFqn = "{$modelNamespace}\\{$this->modelFqnEnd}";
             $this->modelFqn = $modelFqn;
         } else {
-            $modelFqns = $this->discoverModelClasses(parentClass: Model::class);
+            $modelFqns = \discover_package_classes(parentClass: Model::class);
 
             /** @var class-string<Model> $modelFqn */
             $modelFqn = suggest(
@@ -129,8 +129,12 @@ class MakeResourceCommand extends BaseMakeResourceCommand
                 unset($directories[$index]);
                 unset($namespaces[$index]);
             } else {
-                $directories[$index] = str($directory)->replace('Filament', 'Syriable')->toString();
-                $namespaces[$index] = str($namespaces[$index])->replace('Filament', 'Syriable')->toString();
+                $directories[$index] = str($directory)
+                    ->replace(['/Filament/', '\\Filament\\'], ['/Syriable/', '\\Syriable\\'])
+                    ->toString();
+                $namespaces[$index] = str($namespaces[$index])
+                    ->replace('\\Filament\\', '\\Syriable\\')
+                    ->toString();
             }
         }
 
@@ -193,39 +197,5 @@ class MakeResourceCommand extends BaseMakeResourceCommand
                 ->replace('\\', '/')
                 ->replace('//', '/');
         }
-    }
-
-    /**
-     * @param  class-string<Model>|null  $parentClass
-     * @return list<class-string<Model>>
-     */
-    protected function discoverModelClasses(?string $parentClass = null, string $packageName = 'modules'): array
-    {
-        if (blank($packageName) || blank($parentClass)) {
-            return [];
-        }
-
-        $classLoader = require base_path('vendor/autoload.php');
-
-        /** @var array<class-string<Model>, string> $classMap */
-        $classMap = $classLoader->getClassMap();
-
-        $classes = [];
-
-        foreach ($classMap as $class => $file) {
-            if (! (str($file)->contains(DIRECTORY_SEPARATOR . $packageName . DIRECTORY_SEPARATOR) ||
-                str($file)->contains('/' . $packageName . '/') ||
-                str($file)->contains('\\' . $packageName . '\\'))) {
-                continue;
-            }
-
-            if (! is_subclass_of($class, $parentClass)) {
-                continue;
-            }
-
-            $classes[] = $class;
-        }
-
-        return $classes;
     }
 }

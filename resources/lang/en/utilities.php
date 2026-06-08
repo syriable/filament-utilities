@@ -1,6 +1,6 @@
 <?php
 
-// translations for Syriable\Filament\Plugins/Utilities
+// translations for Syriable\Filament\Plugins\Utilities
 return [
     //
 ];

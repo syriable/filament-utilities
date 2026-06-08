@@ -138,14 +138,6 @@ class UtilitiesServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * @return array<string>
-     */
-    protected function getRoutes(): array
-    {
-        return [];
-    }
-
-    /**
      * @return array<string, mixed>
      */
     protected function getScriptData(): array
@@ -159,7 +151,7 @@ class UtilitiesServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-            'create_filament-utilities_table',
+            'create_utilities_table',
         ];
     }
 }

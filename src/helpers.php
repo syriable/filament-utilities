@@ -18,11 +18,20 @@ if (! function_exists('discover_classes')) {
 
 if (! function_exists('discover_package_classes')) {
     /**
+     * Discover classes of a given type that live inside the application's modules
+     * directory. When no package name is supplied it falls back to the directory
+     * configured by InterNACHI/modular (`app-modules.modules_directory`).
+     *
      * @param  class-string<Model>|null  $parentClass
      * @return list<class-string<Model>>
      */
-    function discover_package_classes(?string $parentClass = null, string $packageName = 'modules'): array
+    function discover_package_classes(?string $parentClass = null, ?string $packageName = null): array
     {
+        $packageName = str((string) ($packageName ?? config('app-modules.modules_directory', 'modules')))
+            ->afterLast('/')
+            ->afterLast('\\')
+            ->toString();
+
         if (blank($packageName) || blank($parentClass)) {
             return [];
         }

@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Syriable\Filament\Plugins\Utilities\Commands\FileGenerators\Resources;
 
 use Filament\Commands\FileGenerators\Resources\ResourceClassGenerator as BaseResourceClassGenerator;
+use Illuminate\Database\Eloquent\Model;
 use Nette\PhpGenerator\PhpNamespace;
 use Syriable\Filament\Plugins\Translator\Filament\Resources\TranslatableResource;
 
-use function Livewire\str;
-
 class ResourceClassGenerator extends BaseResourceClassGenerator
 {
+    /**
+     * @return class-string<Model>
+     */
     #[\Override]
     public function getModelFqn(): string
     {
@@ -19,7 +21,10 @@ class ResourceClassGenerator extends BaseResourceClassGenerator
 
         $namespace = str($this->namespace->getName())->before('Filament')->toString();
 
-        return str($oldModel)->replace('App\\', $namespace)->toString();
+        /** @var class-string<Model> $modelFqn */
+        $modelFqn = str($oldModel)->replace('App\\', $namespace)->toString();
+
+        return $modelFqn;
     }
 
     protected function configureNamespace(PhpNamespace $namespace): void
