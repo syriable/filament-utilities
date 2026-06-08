@@ -4,14 +4,23 @@ declare(strict_types=1);
 
 namespace Syriable\Filament\Plugins\Utilities;
 
+use CodeWithDennis\FilamentAdvancedComponents\Filament\Tables\Components\AdvancedTextColumn;
+use Filament\Actions\Action;
 use Filament\Commands\FileGenerators\Resources\Pages\ResourceCreateRecordPageClassGenerator;
 use Filament\Commands\FileGenerators\Resources\Pages\ResourceEditRecordPageClassGenerator;
 use Filament\Commands\FileGenerators\Resources\Pages\ResourceListRecordsPageClassGenerator;
 use Filament\Commands\FileGenerators\Resources\ResourceClassGenerator;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
@@ -98,6 +107,58 @@ class UtilitiesServiceProvider extends PackageServiceProvider
 
         // Testing
         Testable::mixin(new TestsUtilities);
+    }
+
+    /**
+     * Apply opinionated defaults to Filament components.
+     *
+     * This is opt-in: call it from your own service provider's boot() method,
+     * e.g. UtilitiesServiceProvider::initializeFilamentComponents();
+     */
+    public static function initializeFilamentComponents(): void
+    {
+        Page::alignFormActionsEnd();
+        TextInput::configureUsing(fn (TextInput $component): TextInput => $component->maxLength(255)->trim());
+        Textarea::configureUsing(fn (Textarea $component): Textarea => $component->trim());
+        Action::configureUsing(fn (Action $action): Action => $action->modalAlignment(Alignment::Start)->modalWidth('md')->modalFooterActionsAlignment(Alignment::Center));
+        Schema::configureUsing(fn (Schema $schema): Schema => $schema->columns(['lg' => 1, 'xl' => 1]));
+
+        // AdvancedTextColumn ships with the (optional) codewithdennis/filament-advanced-components
+        // package, so only configure it when that package is installed.
+        if (class_exists(AdvancedTextColumn::class)) {
+            AdvancedTextColumn::configureUsing(fn (AdvancedTextColumn $column): AdvancedTextColumn => $column->url(fn (AdvancedTextColumn $column): ?string => match (true) {
+                $column->getMailable() => 'mailto:' . $column->getState(),
+                $column->getCallable() => 'tel:' . $column->getState(),
+                $column->getWhatsAppable() => 'https://wa.me/' . $column->getState(),
+                default => null,
+            }));
+        }
+    }
+
+    /**
+     * Register convenience macros on Filament components.
+     *
+     * This is opt-in: call it from your own service provider's boot() method,
+     * e.g. UtilitiesServiceProvider::microFilamentComponents();
+     */
+    public static function microFilamentComponents(): void
+    {
+        /** @phpstan-ignore-next-line */
+        ToggleButtons::macro('fullWidth', fn ($width = '100%') => $this->extraAttributes(fn (): array => [
+            'style' => sprintf(
+                'width: %s; white-space: nowrap; overflow-x: clip;',
+                /** @phpstan-ignore-next-line */
+                $this->evaluate($width)
+            ),
+        ]));
+
+        /** @phpstan-ignore-next-line */
+        Section::macro('prime', fn () => $this->extraAttributes(fn (): array => [
+            'class' => 'border border-gray-200 rounded-2xl p-1 bg-gray-50 dark:border-gray-700 dark:bg-gray-800',
+        ]));
+
+        /** @phpstan-ignore-next-line */
+        Textarea::macro('counter', fn () => $this->fieldWrapperView('filament-utilities::filament.components.textarea')->extraAlpineAttributes(['x-init' => '$watch(\'state\',value => length = value?.length); length = state?.length ?? length']));
     }
 
     protected function getAssetPackageName(): string

@@ -11,4 +11,11 @@ parameters:
     tmpDir: build/phpstan
     checkOctaneCompatibility: true
     checkModelProperties: true
+    ignoreErrors:
+        # AdvancedTextColumn ships with the optional (paid) codewithdennis/filament-advanced-components
+        # package, which is not installed during analysis. The usage is guarded by class_exists().
+        -
+            message: '#AdvancedTextColumn#'
+            path: src/UtilitiesServiceProvider.php
+            reportUnmatched: false
 
