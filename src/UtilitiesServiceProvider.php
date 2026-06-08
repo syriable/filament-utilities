@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Syriable\Filament\Plugins\Utilities;
 
+use BladeUI\Icons\Factory;
 use CodeWithDennis\FilamentAdvancedComponents\Filament\Tables\Components\AdvancedTextColumn;
 use Filament\Actions\Action;
 use Filament\Commands\FileGenerators\Resources\Pages\ResourceCreateRecordPageClassGenerator;
@@ -28,6 +29,7 @@ use Livewire\Features\SupportTesting\Testable;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Syriable\Filament\Plugins\Activitylog\Filament\Infolists\Components\ActivitylogTimeline;
 use Syriable\Filament\Plugins\Utilities\Testing\TestsUtilities;
 
 class UtilitiesServiceProvider extends PackageServiceProvider
@@ -159,6 +161,52 @@ class UtilitiesServiceProvider extends PackageServiceProvider
 
         /** @phpstan-ignore-next-line */
         Textarea::macro('counter', fn () => $this->fieldWrapperView('filament-utilities::filament.components.textarea')->extraAlpineAttributes(['x-init' => '$watch(\'state\',value => length = value?.length); length = state?.length ?? length']));
+    }
+
+    /**
+     * Register an application SVG icon set with the Blade Icons factory.
+     *
+     * This is opt-in: call it from your own service provider's boot() method,
+     * e.g. UtilitiesServiceProvider::configureFactoryIcons();
+     */
+    public static function configureFactoryIcons(): void
+    {
+        app()->afterResolving(Factory::class, function (Factory $factory): void {
+            $factory->add('fluxwork', [
+                'path' => resource_path('svg/icons'),
+                'prefix' => 'flux',
+            ]);
+        });
+    }
+
+    /**
+     * Apply opinionated defaults to the activity log timeline component.
+     *
+     * This is opt-in: call it from your own service provider's boot() method,
+     * e.g. UtilitiesServiceProvider::configureActivitylogTimeline();
+     */
+    public static function configureActivitylogTimeline(): void
+    {
+        ActivitylogTimeline::configureUsing(
+            fn (ActivitylogTimeline $activitylogTimeline): ActivitylogTimeline => $activitylogTimeline
+                ->compact()
+                ->itemIcons([
+                    'created' => 'heroicon-o-plus',
+                    'deleted' => 'heroicon-o-trash',
+                    'updated' => 'heroicon-o-pencil-square',
+                    'restored' => 'heroicon-o-arrow-path',
+                    'preparation:started' => 'heroicon-o-cog',
+                    'assigned:role' => 'heroicon-o-key',
+                    'mailed:welcome-email' => 'heroicon-o-envelope',
+                ])
+                ->itemIconColors([
+                    // 'created' => 'info',
+                    // 'deleted' => 'danger',
+                    // 'preparation:started' => 'success',
+                    // 'assigned:role' => 'info',
+                    // 'mailed:welcome-email' => 'gray',
+                ])
+        );
     }
 
     protected function getAssetPackageName(): string
