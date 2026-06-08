@@ -32,7 +32,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Syriable\Filament\Plugins\\Utilities\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn (string $modelName) => 'Syriable\Filament\Plugins\\Utilities\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
@@ -72,6 +72,6 @@ class TestCase extends Orchestra
 
     protected function defineDatabaseMigrations(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
     }
 }
