@@ -55,7 +55,7 @@ class MakeResourceCommand extends BaseMakeResourceCommand
             $modelNamespaceOption = $this->option('model-namespace');
             $modelNamespace = is_string($modelNamespaceOption) && filled($modelNamespaceOption)
                 ? $modelNamespaceOption
-                : app()->getNamespace().'Models';
+                : app()->getNamespace() . 'Models';
 
             /** @var class-string<Model> $modelFqn */
             $modelFqn = "{$modelNamespace}\\{$this->modelFqnEnd}";
@@ -78,7 +78,7 @@ class MakeResourceCommand extends BaseMakeResourceCommand
                         fn (string $class): bool => str($class)->replace(['\\', '/'], '')->contains($search, ignoreCase: true),
                     );
                 },
-                placeholder: app()->getNamespace().'Models\\BlogPost',
+                placeholder: app()->getNamespace() . 'Models\\BlogPost',
                 required: true,
             );
             $this->modelFqn = $modelFqn;
@@ -178,11 +178,11 @@ class MakeResourceCommand extends BaseMakeResourceCommand
         if ($this->hasResourceClassesOutsideDirectories) {
             $this->fqnEnd = "{$this->modelFqnEnd}Resource";
         } else {
-            $this->fqnEnd = Str::pluralStudly($this->modelFqnEnd).'\\'.class_basename($this->modelFqn).'Resource';
+            $this->fqnEnd = Str::pluralStudly($this->modelFqnEnd) . '\\' . class_basename($this->modelFqn) . 'Resource';
         }
 
         /** @var class-string $fqn */
-        $fqn = $this->resourcesNamespace.'\\'.$this->fqnEnd;
+        $fqn = $this->resourcesNamespace . '\\' . $this->fqnEnd;
         $this->fqn = $fqn;
 
         if ($this->hasResourceClassesOutsideDirectories) {
@@ -193,7 +193,7 @@ class MakeResourceCommand extends BaseMakeResourceCommand
         } else {
             $this->namespace = (string) str($this->fqn)
                 ->beforeLast('\\');
-            $this->directory = (string) str($this->resourcesDirectory.'/'.Str::pluralStudly($this->modelFqnEnd))
+            $this->directory = (string) str($this->resourcesDirectory . '/' . Str::pluralStudly($this->modelFqnEnd))
                 ->replace('\\', '/')
                 ->replace('//', '/');
         }
