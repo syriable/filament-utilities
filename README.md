@@ -17,7 +17,7 @@ Developer tooling for the Syriable Filament ecosystem. The package wires custom 
 ## Requirements
 
 - PHP 8.4+
-- Laravel 11, 12, or 13
+- Laravel 12 or 13
 - Filament 5.5+
 - [`syriable/filament-translator`](https://github.com/syriable/filament-translator) ^1.1
 - [`syriable/filament-activitylog`](https://github.com/syriable/filament-activitylog) ^0.1
