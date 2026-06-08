@@ -16,6 +16,6 @@ parameters:
         # package, which is not installed during analysis. The usage is guarded by class_exists().
         -
             message: '#AdvancedTextColumn#'
-            path: src/UtilitiesServiceProvider.php
+            path: src/Utilities.php
             reportUnmatched: false
 
