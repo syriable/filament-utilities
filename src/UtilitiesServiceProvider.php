@@ -187,24 +187,25 @@ class UtilitiesServiceProvider extends PackageServiceProvider
      */
     public static function configureActivitylogTimeline(): void
     {
-        ActivitylogTimeline::configureUsing(fn (ActivitylogTimeline $activitylogTimeline): ActivitylogTimeline => $activitylogTimeline
-            ->compact()
-            ->itemIcons([
-                'created' => 'heroicon-o-plus',
-                'deleted' => 'heroicon-o-trash',
-                'updated' => 'heroicon-o-pencil-square',
-                'restored' => 'heroicon-o-arrow-path',
-                'preparation:started' => 'heroicon-o-cog',
-                'assigned:role' => 'heroicon-o-key',
-                'mailed:welcome-email' => 'heroicon-o-envelope',
-            ])
-            ->itemIconColors([
-                // 'created' => 'info',
-                // 'deleted' => 'danger',
-                // 'preparation:started' => 'success',
-                // 'assigned:role' => 'info',
-                // 'mailed:welcome-email' => 'gray',
-            ])
+        ActivitylogTimeline::configureUsing(
+            fn (ActivitylogTimeline $activitylogTimeline): ActivitylogTimeline => $activitylogTimeline
+                ->compact()
+                ->itemIcons([
+                    'created' => 'heroicon-o-plus',
+                    'deleted' => 'heroicon-o-trash',
+                    'updated' => 'heroicon-o-pencil-square',
+                    'restored' => 'heroicon-o-arrow-path',
+                    'preparation:started' => 'heroicon-o-cog',
+                    'assigned:role' => 'heroicon-o-key',
+                    'mailed:welcome-email' => 'heroicon-o-envelope',
+                ])
+                ->itemIconColors([
+                    // 'created' => 'info',
+                    // 'deleted' => 'danger',
+                    // 'preparation:started' => 'success',
+                    // 'assigned:role' => 'info',
+                    // 'mailed:welcome-email' => 'gray',
+                ])
         );
     }
 
