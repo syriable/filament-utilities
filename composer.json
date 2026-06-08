@@ -39,6 +39,9 @@
         "rector/rector": "^2.0",
         "spatie/laravel-ray": "^1.26"
     },
+    "suggest": {
+        "codewithdennis/filament-advanced-components": "Enables AdvancedTextColumn auto-linking (mailto/tel/wa.me) in UtilitiesServiceProvider::initializeFilamentComponents()."
+    },
     "autoload": {
         "psr-4": {
             "Syriable\\Filament\\Plugins\\Utilities\\": "src/",

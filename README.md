@@ -100,6 +100,39 @@ php artisan vendor:publish --tag=filament-utilities-stubs
 
 Stubs are copied to `stubs/filament-utilities/` in your application root.
 
+### Opinionated Filament defaults and macros
+
+The package ships two opt-in helpers. They are **not** applied automatically — call them from your own service provider's `boot()` method:
+
+```php
+use Syriable\Filament\Plugins\Utilities\UtilitiesServiceProvider;
+
+public function boot(): void
+{
+    UtilitiesServiceProvider::initializeFilamentComponents();
+    UtilitiesServiceProvider::microFilamentComponents();
+}
+```
+
+`initializeFilamentComponents()` applies global defaults via `configureUsing()`:
+
+- end-aligned form actions on pages,
+- `TextInput` capped at 255 characters and trimmed,
+- trimmed `Textarea`,
+- consistent modal alignment/width for actions,
+- a single-column responsive `Schema` default,
+- when [`codewithdennis/filament-advanced-components`](https://filamentphp.com/plugins/codewithdennis-advanced-components) is installed, `AdvancedTextColumn` values become clickable `mailto:` / `tel:` / `https://wa.me/` links.
+
+`microFilamentComponents()` registers convenience macros:
+
+- `ToggleButtons::fullWidth()`,
+- `Section::prime()` (a rounded, bordered container),
+- `Textarea::counter()` — renders a live character counter using this package's `filament-utilities::filament.components.textarea` field wrapper.
+
+> The `AdvancedTextColumn` integration requires the optional, paid
+> [`codewithdennis/filament-advanced-components`](https://filamentphp.com/plugins/codewithdennis-advanced-components)
+> package. It is guarded by `class_exists()`, so the rest of the defaults work without it.
+
 ## Testing
 
 ```bash
