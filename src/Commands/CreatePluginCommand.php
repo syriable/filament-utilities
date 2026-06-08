@@ -26,8 +26,6 @@ class CreatePluginCommand extends Command
 
     protected string $pluginFqn;
 
-    protected string $pluginNamespace;
-
     protected string $moduleNameOriginal;
 
     /**
@@ -51,9 +49,9 @@ class CreatePluginCommand extends Command
 
         $plugin = str($this->pluginFqn)->studly()->append('Plugin')->toString();
 
-        $namespace = str($this->pluginFqn)->studly()->prepend(config('app-modules.modules_namespace') . '\\')->toString();
+        $namespace = str($this->pluginFqn)->studly()->prepend($this->modulesNamespace() . '\\')->toString();
 
-        $pluginPath = base_path(config('app-modules.modules_directory')) . '/' . $this->moduleNameOriginal . '/src/' . $plugin . '.php';
+        $pluginPath = base_path($this->modulesDirectory()) . '/' . $this->moduleNameOriginal . '/src/' . $plugin . '.php';
 
         $this->copyStubToApp('plugin', $pluginPath, [
             'namespace' => $namespace,
@@ -76,7 +74,7 @@ class CreatePluginCommand extends Command
     protected function registerPluginInServiceProvider(string $namespace, string $pluginClass): void
     {
         $moduleName = str($this->moduleNameOriginal)->studly()->toString();
-        $serviceProviderPath = base_path(config('app-modules.modules_directory')) . '/' . $this->moduleNameOriginal . '/src/Providers/' . $moduleName . 'ServiceProvider.php';
+        $serviceProviderPath = base_path($this->modulesDirectory()) . '/' . $this->moduleNameOriginal . '/src/Providers/' . $moduleName . 'ServiceProvider.php';
 
         // Check if service provider exists
         if (! File::exists($serviceProviderPath)) {
@@ -94,9 +92,21 @@ class CreatePluginCommand extends Command
             return;
         }
 
-        // Check if Panel::configureUsing exists
+        File::put($serviceProviderPath, self::injectPluginRegistration($content, $namespace, $pluginClass));
+        $this->info('Plugin registration added to service provider.');
+    }
+
+    /**
+     * Insert the plugin's import and registration into a module service provider's
+     * source. When the provider has no `Panel::configureUsing()` block one is added
+     * to its `register()` method; otherwise the plugin is appended to the existing block.
+     */
+    public static function injectPluginRegistration(string $content, string $namespace, string $pluginClass): string
+    {
+        $pluginImport = "use {$namespace}\\{$pluginClass};";
+
         if (! str_contains($content, 'Panel::configureUsing')) {
-            // Add Panel import if not exists
+            // Add Panel import if not present.
             if (! str_contains($content, 'use Filament\\Panel;')) {
                 $content = str_replace(
                     'use Illuminate\\Support\\ServiceProvider;',
@@ -105,60 +115,50 @@ class CreatePluginCommand extends Command
                 );
             }
 
-            // Add plugin import
-            $pluginImport = "use {$namespace}\\{$pluginClass};";
-            if (! str_contains($content, $pluginImport)) {
-                // Find the last use statement and add after it
-                preg_match_all('/^use .+;$/m', $content, $matches);
-                if ($matches[0] !== []) {
-                    $lastUse = end($matches[0]);
-                    $content = str_replace(
-                        $lastUse,
-                        $lastUse . "\n" . $pluginImport,
-                        $content
-                    );
-                } else {
-                    // Add after namespace if no use statements
-                    $content = preg_replace(
-                        '/^(namespace .+;)$/m',
-                        "$1\n\n" . $pluginImport,
-                        $content
-                    );
-                }
-            }
+            $content = self::addUseStatement($content, $pluginImport);
 
-            // Add Panel::configureUsing in register method
-            $content = preg_replace(
+            // Add Panel::configureUsing in the register method.
+            return (string) preg_replace(
                 '/(public function register\(\): void\s*\{)/',
                 "$1\n        Panel::configureUsing(function (Panel \$panel): void {\n            \$panel->plugin({$pluginClass}::make());\n        });\n",
-                (string) $content
-            );
-        } else {
-            // Panel::configureUsing exists, add plugin inside it
-            // Add plugin import
-            $pluginImport = "use {$namespace}\\{$pluginClass};";
-            if (! str_contains($content, $pluginImport)) {
-                preg_match_all('/^use .+;$/m', $content, $matches);
-                if ($matches[0] !== []) {
-                    $lastUse = end($matches[0]);
-                    $content = str_replace(
-                        $lastUse,
-                        $lastUse . "\n" . $pluginImport,
-                        $content
-                    );
-                }
-            }
-
-            // Add plugin registration inside Panel::configureUsing
-            $content = preg_replace(
-                '/(Panel::configureUsing\(function \(Panel \$panel\): void \{)/',
-                "$1\n            \$panel->plugin({$pluginClass}::make());",
-                (string) $content
+                $content
             );
         }
 
-        File::put($serviceProviderPath, (string) $content);
-        $this->info('Plugin registration added to service provider.');
+        // Panel::configureUsing already exists, add the plugin inside it.
+        $content = self::addUseStatement($content, $pluginImport);
+
+        return (string) preg_replace(
+            '/(Panel::configureUsing\(function \(Panel \$panel\): void \{)/',
+            "$1\n            \$panel->plugin({$pluginClass}::make());",
+            $content
+        );
+    }
+
+    /**
+     * Append a `use` statement after the last existing import, or after the
+     * namespace declaration when the file has no imports yet. No-ops when the
+     * statement is already present.
+     */
+    protected static function addUseStatement(string $content, string $useStatement): string
+    {
+        if (str_contains($content, $useStatement)) {
+            return $content;
+        }
+
+        preg_match_all('/^use .+;$/m', $content, $matches);
+
+        if ($matches[0] !== []) {
+            $lastUse = end($matches[0]);
+
+            return str_replace($lastUse, $lastUse . "\n" . $useStatement, $content);
+        }
+
+        return (string) preg_replace(
+            '/^(namespace .+;)$/m',
+            "$1\n\n" . $useStatement,
+            $content
+        );
     }
 
     protected function configurePlugin(): void
@@ -170,6 +170,7 @@ class CreatePluginCommand extends Command
                 ->trim('/')
                 ->trim('\\')
                 ->trim(' ')
+                ->replaceMatches('/[^A-Za-z0-9_\/-]/', '')
                 ->toString();
 
             $this->moduleNameOriginal = $originalName;
@@ -177,13 +178,15 @@ class CreatePluginCommand extends Command
                 ->studly()
                 ->replace('/', '\\')
                 ->toString();
-            $this->pluginNamespace = app()->getNamespace() . 'Plugins\\' . $this->pluginFqn;
 
             return;
         }
 
-        $pluginFqns = collect(File::glob(base_path('modules/*')))
-            ->map(fn ($path) => str($path)->after(base_path('modules/'))->toString())->toArray();
+        $modulesDirectory = $this->modulesDirectory();
+
+        $pluginFqns = collect(File::glob(base_path($modulesDirectory . '/*')))
+            ->map(fn (string $path): string => str($path)->after(base_path($modulesDirectory . '/'))->toString())
+            ->toArray();
 
         $selected = suggest(
             label: 'What is the plugin?',
@@ -205,5 +208,21 @@ class CreatePluginCommand extends Command
 
         $this->moduleNameOriginal = $selected;
         $this->pluginFqn = str($selected)->studly()->toString();
+    }
+
+    /**
+     * The application's modules directory, as configured by InterNACHI/modular.
+     */
+    protected function modulesDirectory(): string
+    {
+        return (string) config('app-modules.modules_directory', 'modules');
+    }
+
+    /**
+     * The root namespace for the application's modules, as configured by InterNACHI/modular.
+     */
+    protected function modulesNamespace(): string
+    {
+        return (string) config('app-modules.modules_namespace', 'Modules');
     }
 }

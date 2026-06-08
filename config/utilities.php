@@ -1,6 +1,6 @@
 <?php
 
-// config for Syriable\Filament\Plugins/Utilities
+// config for Syriable\Filament\Plugins\Utilities
 return [
 
 ];

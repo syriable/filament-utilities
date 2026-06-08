@@ -8,8 +8,6 @@ use Filament\Commands\FileGenerators\Resources\ResourceClassGenerator as BaseRes
 use Nette\PhpGenerator\PhpNamespace;
 use Syriable\Filament\Plugins\Translator\Filament\Resources\TranslatableResource;
 
-use function Livewire\str;
-
 class ResourceClassGenerator extends BaseResourceClassGenerator
 {
     #[\Override]
