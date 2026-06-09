@@ -44,9 +44,9 @@ if (! function_exists('discover_package_classes')) {
         $classes = [];
 
         foreach ($classMap as $class => $file) {
-            if (! (str($file)->contains(DIRECTORY_SEPARATOR . $packageName . DIRECTORY_SEPARATOR) ||
-                str($file)->contains('/' . $packageName . '/') ||
-                str($file)->contains('\\' . $packageName . '\\'))) {
+            if (! (str($file)->contains(DIRECTORY_SEPARATOR.$packageName.DIRECTORY_SEPARATOR) ||
+                str($file)->contains('/'.$packageName.'/') ||
+                str($file)->contains('\\'.$packageName.'\\'))) {
                 continue;
             }
 

@@ -47,9 +47,9 @@ class Utilities
         // package, so only configure it when that package is installed.
         if (class_exists(AdvancedTextColumn::class)) {
             AdvancedTextColumn::configureUsing(fn (AdvancedTextColumn $column): AdvancedTextColumn => $column->url(fn (AdvancedTextColumn $column): ?string => match (true) {
-                $column->getMailable() => 'mailto:' . $column->getState(),
-                $column->getCallable() => 'tel:' . $column->getState(),
-                $column->getWhatsAppable() => 'https://wa.me/' . $column->getState(),
+                $column->getMailable() => 'mailto:'.$column->getState(),
+                $column->getCallable() => 'tel:'.$column->getState(),
+                $column->getWhatsAppable() => 'https://wa.me/'.$column->getState(),
                 default => null,
             }));
         }
@@ -90,7 +90,7 @@ class Utilities
     public static function configureFactoryIcons(): void
     {
         $register = function (Factory $factory): void {
-            $paths = [__DIR__ . '/../resources/svg/icons'];
+            $paths = [__DIR__.'/../resources/svg/icons'];
 
             $applicationIconsPath = function_exists('resource_path')
                 ? resource_path('svg/icons')
