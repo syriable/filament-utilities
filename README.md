@@ -101,6 +101,46 @@ php artisan vendor:publish --tag=filament-utilities-stubs
 
 Stubs are copied to `stubs/filament-utilities/` in your application root.
 
+### Configuration
+
+Publish the config file to customize how the bundled plugins are registered:
+
+```bash
+php artisan vendor:publish --tag=filament-utilities-config
+```
+
+This copies `config/filament-utilities.php` to your application's `config/` directory:
+
+```php
+return [
+    'translator' => [
+        // Scaffold missing translation keys while resolving labels.
+        'create_missing_translation_keys' => true,
+
+        // Map namespaces to translation path aliases.
+        'path_aliases' => [
+            'App\\Livewire' => 'livewire',
+            'Modules\\Users\\Filament\\Resources' => 'modules/users',
+        ],
+    ],
+];
+```
+
+`UtilitiesPlugin` reads these values when registering [`TranslatorPlugin`](https://github.com/syriable/filament-translator) and [`Activitylog`](https://github.com/syriable/filament-activitylog) on a panel:
+
+```php
+use Filament\Panel;
+use Syriable\Filament\Plugins\Utilities\UtilitiesPlugin;
+
+public function panel(Panel $panel): Panel
+{
+    return $panel
+        ->plugins([
+            UtilitiesPlugin::make(),
+        ]);
+}
+```
+
 ### Opinionated Filament defaults and macros
 
 The package ships several opt-in helpers. They are **not** applied automatically — call them from your own service provider's `boot()` method:
