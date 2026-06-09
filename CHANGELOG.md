@@ -2,6 +2,10 @@
 
 All notable changes to `filament-utilities` will be documented in this file.
 
+## 0.1.2 - 2026-06-09
+
+**Full Changelog**: https://github.com/syriable/filament-utilities/compare/0.1.1...0.1.2
+
 ## 0.1.1 - 2026-06-08
 
 ### What's Changed
