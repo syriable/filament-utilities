@@ -49,9 +49,9 @@ class CreatePluginCommand extends Command
 
         $plugin = str($this->pluginFqn)->studly()->append('Plugin')->toString();
 
-        $namespace = str($this->pluginFqn)->studly()->prepend($this->modulesNamespace().'\\')->toString();
+        $namespace = str($this->pluginFqn)->studly()->prepend($this->modulesNamespace() . '\\')->toString();
 
-        $pluginPath = base_path($this->modulesDirectory()).'/'.$this->moduleNameOriginal.'/src/'.$plugin.'.php';
+        $pluginPath = base_path($this->modulesDirectory()) . '/' . $this->moduleNameOriginal . '/src/' . $plugin . '.php';
 
         $this->copyStubToApp('plugin', $pluginPath, [
             'namespace' => $namespace,
@@ -66,7 +66,7 @@ class CreatePluginCommand extends Command
         // Automatically register plugin in service provider
         $this->registerPluginInServiceProvider($namespace, $plugin);
 
-        $this->info('Plugin created successfully at: '.$pluginPath);
+        $this->info('Plugin created successfully at: ' . $pluginPath);
 
         return self::SUCCESS;
     }
@@ -74,7 +74,7 @@ class CreatePluginCommand extends Command
     protected function registerPluginInServiceProvider(string $namespace, string $pluginClass): void
     {
         $moduleName = str($this->moduleNameOriginal)->studly()->toString();
-        $serviceProviderPath = base_path($this->modulesDirectory()).'/'.$this->moduleNameOriginal.'/src/Providers/'.$moduleName.'ServiceProvider.php';
+        $serviceProviderPath = base_path($this->modulesDirectory()) . '/' . $this->moduleNameOriginal . '/src/Providers/' . $moduleName . 'ServiceProvider.php';
 
         // Check if service provider exists
         if (! File::exists($serviceProviderPath)) {
@@ -86,7 +86,7 @@ class CreatePluginCommand extends Command
         $content = File::get($serviceProviderPath);
 
         // Check if plugin is already registered
-        if (str_contains($content, $pluginClass.'::make()')) {
+        if (str_contains($content, $pluginClass . '::make()')) {
             $this->info('Plugin already registered in service provider.');
 
             return;
@@ -153,12 +153,12 @@ class CreatePluginCommand extends Command
         if ($matches[0] !== []) {
             $lastUse = end($matches[0]);
 
-            return str_replace($lastUse, $lastUse."\n".$useStatement, $content);
+            return str_replace($lastUse, $lastUse . "\n" . $useStatement, $content);
         }
 
         return (string) preg_replace(
             '/^(namespace .+;)\r?$/m',
-            "$1\n\n".$useStatement,
+            "$1\n\n" . $useStatement,
             $content
         );
     }
@@ -186,8 +186,8 @@ class CreatePluginCommand extends Command
 
         $modulesDirectory = $this->modulesDirectory();
 
-        $pluginFqns = collect(File::glob(base_path($modulesDirectory.'/*')))
-            ->map(fn (string $path): string => str($path)->after(base_path($modulesDirectory.'/'))->toString())
+        $pluginFqns = collect(File::glob(base_path($modulesDirectory . '/*')))
+            ->map(fn (string $path): string => str($path)->after(base_path($modulesDirectory . '/'))->toString())
             ->toArray();
 
         $selected = suggest(
