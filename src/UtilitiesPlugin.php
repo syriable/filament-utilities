@@ -18,14 +18,17 @@ class UtilitiesPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
+        /** @var bool $createMissingTranslationKeys */
+        $createMissingTranslationKeys = config('filament-utilities.translator.create_missing_translation_keys', true);
+
+        /** @var array<string, string> $pathAliases */
+        $pathAliases = config('filament-utilities.translator.path_aliases', []);
+
         $panel->plugins([
             Activitylog::make(),
             TranslatorPlugin::make()
-                ->createMissingTranslationKeys()
-                ->pathAliases([
-                    'App\\Livewire' => 'livewire',
-                    'Modules\\Users\\Filament\\Resources' => 'modules/users',
-                ]),
+                ->createMissingTranslationKeys($createMissingTranslationKeys)
+                ->pathAliases($pathAliases),
         ]);
     }
 
