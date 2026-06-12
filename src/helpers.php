@@ -60,3 +60,24 @@ if (! function_exists('discover_package_classes')) {
         return $classes;
     }
 }
+
+if (! function_exists('array_map_assoc')) {
+    /**
+     * Apply a mapping callback receiving key and value as arguments.
+     * The standard array_map doesn't pass the key to the callback. But in the case of associative arrays,
+     * it could be really helpful.
+     *
+     * array_map_assoc(function ($key, $value) {
+     *  ...
+     * }, $items)
+     */
+    /**
+     * @param  callable(int|string, mixed): mixed  $callback
+     * @param  array<int|string, mixed>  $array
+     * @return list<mixed>
+     */
+    function array_map_assoc(callable $callback, array $array): array
+    {
+        return array_map(fn (int | string $key) => $callback($key, $array[$key]), array_keys($array));
+    }
+}
