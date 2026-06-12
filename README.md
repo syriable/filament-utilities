@@ -5,20 +5,23 @@
 [![GitHub Code Style Action Status](https://github.com/syriable/filament-utilities/actions/workflows/fix-code-style.yml/badge.svg?branch=5.x)](https://github.com/syriable/filament-utilities/actions?query=workflow%3Afix-code-style+branch%3A5.x)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 
-Developer tooling for the Syriable Filament ecosystem. The package wires custom Artisan generators that scaffold **translatable** Filament resources and module plugins, built on top of [`syriable/filament-translator`](https://github.com/syriable/filament-translator).
+Developer tooling for the Syriable Filament ecosystem. The package wires custom Artisan generators that scaffold **translatable** Filament resources and module plugins, a **guard-aware** Filament Shield role resource, and a panel plugin that bundles Syriable's translator, activity log, and Shield integrations.
 
 ## Features
 
 - **`syriable:make-resource`** — drop-in replacement for Filament's resource generator that extends `TranslatableResource` and translatable resource pages instead of Filament's base classes.
 - **Module-aware model discovery** — interactive model selection searches Eloquent models under your `modules/` directory.
-- **`plugin:resource`** — scaffolds a Filament panel plugin for an [InterNACHI/modular](https://github.com/InterNACHI/modular) module and registers it in the module service provider.
+- **`plugin:resource`** (`CreatePluginCommand`) — scaffolds a Filament panel plugin for an [InterNACHI/modular](https://github.com/InterNACHI/modular) module, auto-discovers its Filament components, and registers the plugin in the module service provider.
 - **Custom file generators** — binds Syriable generators into Filament's `make:filament-resource` pipeline so generated code is translation-ready out of the box.
+- **`UtilitiesPlugin`** — registers [`TranslatorPlugin`](https://github.com/syriable/filament-translator), [`Activitylog`](https://github.com/syriable/filament-activitylog), and [`FilamentShieldPlugin`](https://github.com/bezhanSalleh/filament-shield) on a panel from a single entry point.
+- **Guard-aware `RoleResource`** — extends Filament Shield's role resource with a live `guard_name` selector, per-guard permission matrices, and correct user counts across morph types.
 
 ## Requirements
 
 - PHP 8.4+
 - Laravel 12 or 13
 - Filament 5.5+
+- [`bezhansalleh/filament-shield`](https://github.com/bezhanSalleh/filament-shield) ^4.2
 - [`syriable/filament-translator`](https://github.com/syriable/filament-translator) ^1.1
 - [`syriable/filament-activitylog`](https://github.com/syriable/filament-activitylog) ^0.1
 
@@ -32,22 +35,22 @@ Install the package via Composer:
 composer require syriable/filament-utilities
 ```
 
-Register [`TranslatorPlugin`](https://github.com/syriable/filament-translator) on every Filament panel that should resolve convention-based labels:
+`UtilitiesServiceProvider` is auto-discovered. Register `UtilitiesPlugin` on every Filament panel that should use the bundled Syriable integrations:
 
 ```php
 use Filament\Panel;
-use Syriable\Filament\Plugins\Translator\TranslatorPlugin;
+use Syriable\Filament\Plugins\Utilities\UtilitiesPlugin;
 
 public function panel(Panel $panel): Panel
 {
     return $panel
         ->plugins([
-            TranslatorPlugin::make(),
+            UtilitiesPlugin::make(),
         ]);
 }
 ```
 
-`UtilitiesServiceProvider` is auto-discovered. No panel plugin registration is required for the generators to work.
+`UtilitiesPlugin` registers the custom `RoleResource`, `TranslatorPlugin`, `Activitylog`, and `FilamentShieldPlugin`. You do not need to register those plugins separately when using `UtilitiesPlugin`.
 
 ## Usage
 
@@ -74,22 +77,87 @@ Model namespaces are resolved relative to the selected resource namespace so mod
 
 After generation, add translation keys under `lang/{locale}/` following the [filament-translator convention](https://github.com/syriable/filament-translator#translation-key-convention). Enable `createMissingTranslationKeys()` during local development to scaffold missing keys automatically.
 
-### Generate a module Filament plugin
+### `plugin:resource` (`CreatePluginCommand`)
 
-Scaffold a Filament plugin class inside a modular application:
+Scaffold a Filament panel plugin inside an [InterNACHI/modular](https://github.com/InterNACHI/modular) module:
 
 ```bash
 php artisan plugin:resource users
 ```
 
-When the module name is omitted, the command interactively lists directories under `modules/`.
+| Argument | Required | Description |
+| --- | --- | --- |
+| `plugin` | No | Module directory name (for example, `users`). When omitted, the command interactively suggests directories from your configured modules path. |
 
-The command:
+The command reads `config('app-modules.modules_directory')` (default `modules`) and `config('app-modules.modules_namespace')` (default `Modules`) to resolve paths and namespaces.
 
-1. Creates `{Module}Plugin.php` in `modules/{module}/src/` using the published stub.
-2. Registers the plugin on the module's service provider via `Panel::configureUsing()`.
+**What it generates**
 
-The generated plugin discovers resources, pages, and widgets under the module's `Filament/` directories.
+For `php artisan plugin:resource users`, the command creates:
+
+```
+modules/users/src/UsersPlugin.php
+```
+
+with namespace `Modules\Users`. The generated plugin class:
+
+- implements Filament's `Plugin` contract,
+- uses the module slug as its plugin ID (`users`),
+- discovers resources, pages, and widgets under `Filament/Resources`, `Filament/Pages`, and `Filament/Widgets` relative to the plugin file.
+
+**Service provider registration**
+
+`CreatePluginCommand` also patches the module service provider at `modules/{module}/src/Providers/{Module}ServiceProvider.php`:
+
+- adds the plugin `use` import when missing,
+- appends `$panel->plugin(UsersPlugin::make())` to an existing `Panel::configureUsing()` block, or
+- creates a new `Panel::configureUsing()` block inside `register()` when none exists.
+
+Re-running the command is safe — it skips registration when the plugin is already present.
+
+Customize the generated plugin by publishing the stub before running the command (see [Publish generator stubs](#publish-generator-stubs)).
+
+### Guard-aware role management
+
+The package replaces Filament Shield's default `RoleResource` with a translatable variant that supports multiple authentication guards.
+
+When creating or editing a role, the `guard_name` field is populated from `config('auth.guards')` and updates the permission matrix live. Changing the guard:
+
+- swaps Filament Shield's `resources.exclude` and `policies.methods` config for guard-specific overrides from `config/filament-utilities.php`,
+- flushes Shield's cached resource discovery so the permission checkboxes reflect the selected guard,
+- prunes stale checkbox state so validation does not fail when switching between guards.
+
+The roles table counts users via the `model_has_roles` pivot directly, so `users_count` is accurate when the same role is assigned to models on different guards (for example, `Admin` and `Buyer`).
+
+Publish and customize the web-guard overrides:
+
+```bash
+php artisan vendor:publish --tag=filament-utilities-config
+```
+
+```php
+use Modules\Users\Filament\Resources\Admins\AdminResource;
+use Syriable\Filament\Plugins\Utilities\Filament\Resources\Roles\RoleResource;
+
+return [
+    'shield' => [
+        'resources' => [
+            // Resources hidden from the permission matrix for the 'web' guard.
+            'exclude' => [
+                RoleResource::class,
+                AdminResource::class,
+            ],
+        ],
+        'policies' => [
+            // Policy methods available in the permission matrix for the 'web' guard.
+            'methods' => ['viewAny', 'view', 'create', 'update'],
+        ],
+    ],
+    // ...
+];
+```
+
+Non-`web` guards use your application's `config/filament-shield.php` values. Run `php artisan shield:generate` as usual to scaffold permissions and policies for application resources.
 
 ### Publish generator stubs
 
@@ -103,7 +171,7 @@ Stubs are copied to `stubs/filament-utilities/` in your application root.
 
 ### Configuration
 
-Publish the config file to customize how the bundled plugins are registered:
+Publish the config file to customize translator path aliases, missing-key scaffolding, and Shield guard overrides:
 
 ```bash
 php artisan vendor:publish --tag=filament-utilities-config
@@ -113,6 +181,16 @@ This copies `config/filament-utilities.php` to your application's `config/` dire
 
 ```php
 return [
+    'shield' => [
+        'resources' => [
+            'exclude' => [
+                // Resource classes omitted from the 'web' guard permission matrix.
+            ],
+        ],
+        'policies' => [
+            'methods' => ['viewAny', 'view', 'create', 'update'],
+        ],
+    ],
     'translator' => [
         // Scaffold missing translation keys while resolving labels.
         'create_missing_translation_keys' => true,
@@ -126,20 +204,7 @@ return [
 ];
 ```
 
-`UtilitiesPlugin` reads these values when registering [`TranslatorPlugin`](https://github.com/syriable/filament-translator) and [`Activitylog`](https://github.com/syriable/filament-activitylog) on a panel:
-
-```php
-use Filament\Panel;
-use Syriable\Filament\Plugins\Utilities\UtilitiesPlugin;
-
-public function panel(Panel $panel): Panel
-{
-    return $panel
-        ->plugins([
-            UtilitiesPlugin::make(),
-        ]);
-}
-```
+`UtilitiesPlugin` reads these values when registering `TranslatorPlugin`, `Activitylog`, `FilamentShieldPlugin`, and the bundled `RoleResource`.
 
 ### Opinionated Filament defaults and macros
 
@@ -189,9 +254,11 @@ composer test
 Other useful scripts:
 
 ```bash
-composer analyse   # PHPStan
+composer analyse   # PHPStan (512M memory limit)
 composer lint      # Laravel Pint
 ```
+
+Run `composer analyse` instead of invoking PHPStan directly — the package analysis exceeds PHP's default 128M memory limit.
 
 ## Changelog
 
