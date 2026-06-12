@@ -69,7 +69,7 @@ class RoleResource extends BaseResource implements TranslatesConventionally
                 ->schema([
                     Grid::make()
                         ->schema(fn (Get $get): ?array => static::getResourceEntitiesSchemaWithConfig($get))
-                        ->columns(fn (): array|int|string => static::shield()->getGridColumns()),
+                        ->columns(fn (): array | int | string => static::shield()->getGridColumns()),
                 ]);
     }
 
