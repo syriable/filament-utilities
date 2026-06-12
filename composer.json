@@ -24,6 +24,7 @@
     ],
     "require": {
         "php": "^8.4",
+        "bezhansalleh/filament-shield": "^4.2",
         "filament/filament": "^5.5",
         "spatie/laravel-package-tools": "^1.15.0",
         "syriable/filament-activitylog": "^0.1.0",
@@ -59,7 +60,7 @@
     },
     "scripts": {
         "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
-        "analyse": "phpstan analyse --memory-limit=512M",
+        "analyse": "@php vendor/bin/phpstan analyse --memory-limit=512M",
         "lint": "pint",
         "refactor": "rector",
         "test": "pest --no-coverage",
