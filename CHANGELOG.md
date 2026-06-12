@@ -2,6 +2,14 @@
 
 All notable changes to `filament-utilities` will be documented in this file.
 
+## 0.1.3 - 2026-06-12
+
+### What's Changed
+
+* Add publishable config for bundled plugins by @alkhatibsy in https://github.com/syriable/filament-utilities/pull/5
+
+**Full Changelog**: https://github.com/syriable/filament-utilities/compare/0.1.2...0.1.3
+
 ## 0.1.2 - 2026-06-09
 
 **Full Changelog**: https://github.com/syriable/filament-utilities/compare/0.1.1...0.1.2
