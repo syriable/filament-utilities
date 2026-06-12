@@ -2,7 +2,65 @@
 
 declare(strict_types=1);
 
+use Modules\Users\Filament\Resources\Admins\AdminResource;
+use Syriable\Filament\Plugins\Utilities\Filament\Resources\Roles\RoleResource;
+
 return [
+    /*
+    |--------------------------------------------------------------------------
+    | Shield Plugin
+    |--------------------------------------------------------------------------
+    |
+    | This is the shield plugin configuration.
+    |
+    */
+    'shield' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Resources
+        |--------------------------------------------------------------------------
+        |
+        | This is the resources configuration.
+        |
+        */
+        'resources' => [
+            /*
+            |--------------------------------------------------------------------------
+            | Exclude Resources for 'web' Guard Users
+            |--------------------------------------------------------------------------
+            |
+            | Users belonging to the 'web' guard cannot use these resources.
+            |
+            */
+            'exclude' => [
+                RoleResource::class,
+                AdminResource::class,
+            ],
+
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Policies
+        |--------------------------------------------------------------------------
+        |
+        | This is the policies configuration.
+        |
+        */
+        'policies' => [
+            /*
+            |--------------------------------------------------------------------------
+            | Methods for 'web' Guard Users
+            |--------------------------------------------------------------------------
+            |
+            | These methods are available to users belonging to the 'web' guard.
+            |
+            */
+            'methods' => ['viewAny', 'view', 'create', 'update'],
+
+        ],
+
+    ],
     /*
     |--------------------------------------------------------------------------
     | Translator Plugin
