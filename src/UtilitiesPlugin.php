@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Syriable\Filament\Plugins\Utilities;
 
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Syriable\Filament\Plugins\Activitylog\Activitylog;
 use Syriable\Filament\Plugins\Translator\TranslatorPlugin;
+use Syriable\Filament\Plugins\Utilities\Filament\Resources\Roles\RoleResource;
 
 class UtilitiesPlugin implements Plugin
 {
@@ -24,12 +26,18 @@ class UtilitiesPlugin implements Plugin
         /** @var array<string, string> $pathAliases */
         $pathAliases = config('filament-utilities.translator.path_aliases', []);
 
-        $panel->plugins([
-            Activitylog::make(),
-            TranslatorPlugin::make()
-                ->createMissingTranslationKeys($createMissingTranslationKeys)
-                ->pathAliases($pathAliases),
-        ]);
+        $panel
+            ->resources([
+                RoleResource::class,
+            ])
+            ->plugins([
+                Activitylog::make(),
+                TranslatorPlugin::make()
+                    ->createMissingTranslationKeys($createMissingTranslationKeys)
+                    ->pathAliases($pathAliases),
+                FilamentShieldPlugin::make()
+                    ->navigationIcon(''),
+            ]);
     }
 
     public function boot(Panel $panel): void
