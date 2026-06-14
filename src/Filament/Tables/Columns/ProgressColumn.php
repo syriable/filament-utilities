@@ -50,7 +50,7 @@ class ProgressColumn extends Column
 
     public function getProgress(): int | float | Closure
     {
-        if (!$this->progress instanceof \Closure) {
+        if (! $this->progress instanceof Closure) {
             return floor($this->getStateFromRecord() ?? 0);
         }
 
