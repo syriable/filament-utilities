@@ -30,16 +30,19 @@ class RoleResource extends BaseResource implements TranslatesConventionally
     /** @var array<string, mixed>|null */
     protected static ?array $defaultShieldConfig = null;
 
+    #[\Override]
     public static function form(Schema $schema): Schema
     {
         return RoleForm::configure($schema);
     }
 
+    #[\Override]
     public static function table(Table $table): Table
     {
         return RolesTable::configure($table);
     }
 
+    #[\Override]
     public static function getPages(): array
     {
         return [
@@ -59,6 +62,7 @@ class RoleResource extends BaseResource implements TranslatesConventionally
         return static::getResourceEntitiesSchema();
     }
 
+    #[\Override]
     public static function getTabFormComponentForResources(): Component
     {
         return static::shield()->hasSimpleResourcePermissionView()
