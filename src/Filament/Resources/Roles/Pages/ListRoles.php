@@ -16,6 +16,7 @@ class ListRoles extends BaseListRoles implements TranslatesConventionally
 
     protected static string $resource = RoleResource::class;
 
+    #[\Override]
     protected function getHeaderActions(): array
     {
         return [
