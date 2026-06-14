@@ -38,7 +38,7 @@ class RoleForm
                                     ->options(function (): array {
                                         $guards = array_keys(config('auth.guards', []));
 
-                                        return array_combine($guards, $guards) ?: [];
+                                        return array_combine($guards, $guards);
                                     })
                                     ->label(__('filament-shield::filament-shield.field.guard_name'))
                                     ->default('web')
