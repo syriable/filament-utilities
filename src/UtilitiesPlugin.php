@@ -27,6 +27,18 @@ class UtilitiesPlugin implements Plugin
         $pathAliases = config('filament-utilities.translator.path_aliases', []);
 
         $panel
+            ->discoverResources(
+                in: __DIR__ . '/Filament/Resources',
+                for: 'Syriable\\Filament\\Plugins\\Utilities\\Filament\\Resources',
+            )
+            ->discoverPages(
+                in: __DIR__ . '/Filament/Pages',
+                for: 'Syriable\\Filament\\Plugins\\Utilities\\Filament\\Pages',
+            )
+            ->discoverWidgets(
+                in: __DIR__ . '/Filament/Widgets',
+                for: 'Syriable\\Filament\\Plugins\\Utilities\\Filament\\Widgets',
+            )
             ->resources([
                 RoleResource::class,
             ])
