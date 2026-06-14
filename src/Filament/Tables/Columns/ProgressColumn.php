@@ -54,7 +54,7 @@ class ProgressColumn extends Column
             return floor($this->getStateFromRecord() ?? 0);
         }
 
-        return $this->evaluate($this->progress);
+        return floor((float) $this->evaluate($this->progress));
     }
 
     public function poll(string | Closure $duration): static
