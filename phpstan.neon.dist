@@ -8,6 +8,8 @@ parameters:
         - src
         - database
     tmpDir: build/phpstan
+    bootstrapFiles:
+        - phpstan-bootstrap.php
     checkOctaneCompatibility: true
     checkModelProperties: true
     ignoreErrors:
